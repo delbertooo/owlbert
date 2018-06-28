@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"./config"
 	"./pinlike"
+	"./webhook"
 )
 
 var (
@@ -53,9 +53,18 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 func webhooksHandler(w http.ResponseWriter, r *http.Request) {
 	configName := r.URL.Path[len(webhooksMapping):]
-	action, err := config.LoadWebhookAction(configName, "push")
+	metaData, err := webhook.ReadGitlabHookMetaData(r)
 	if err != nil {
-		log.Println("Unknown config: " + configName)
+		log.Println("Could not read request body.")
+		return
+	}
+	action, err := webhook.LoadWebhookAction(configName, metaData.ObjectKind)
+	if err != nil {
+		log.Println("Error while loading action for "+configName, err)
+		return
+	}
+	if action == nil {
+		log.Printf("Could not find action '%v' in config '%v'.", metaData.ObjectKind, configName)
 		return
 	}
 	mutex.Lock()

@@ -1,4 +1,4 @@
-package config
+package webhook
 
 import (
 	"encoding/json"
@@ -47,6 +47,9 @@ func LoadWebhookAction(configName string, action string) (WebhookAction, error) 
 	json.Unmarshal(raw, &c)
 
 	config := findActionConfig(c, action)
+	if config == nil {
+		return nil, nil
+	}
 
 	return config, nil
 }
