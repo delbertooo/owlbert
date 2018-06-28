@@ -4,25 +4,41 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"strconv"
 	"time"
 
 	"../pinlike"
 )
 
-type webhookConfig struct {
+type webhookConfigAction struct {
 	ObjectKind string `json:"object_kind"`
 	Calling    []int  `json:"calling"`
+}
+type webhookConfig struct {
+	SecretToken string                `json:"secret_token"`
+	Actions     []webhookConfigAction `json:"actions"`
+}
+
+type actionImpl struct {
+	calling     []int
+	secretToken string
 }
 
 type WebhookAction interface {
 	Run(pin pinlike.PinLike)
+	IsAuthorized(req *http.Request) bool
 }
 
-func (c *webhookConfig) Run(pin pinlike.PinLike) {
+func (a *actionImpl) IsAuthorized(req *http.Request) bool {
+	token := req.Header.Get("X-Gitlab-Token")
+	return a.secretToken == "" || a.secretToken == token
+}
+
+func (c *actionImpl) Run(pin pinlike.PinLike) {
 	var duration int
 	var what string
-	for _, call := range c.Calling {
+	for _, call := range c.calling {
 		if call < 0 {
 			what = "Low"
 			duration = -call
@@ -43,7 +59,7 @@ func LoadWebhookAction(configName string, action string) (WebhookAction, error) 
 	if err != nil {
 		return nil, err
 	}
-	var c []webhookConfig
+	var c webhookConfig
 	json.Unmarshal(raw, &c)
 
 	config := findActionConfig(c, action)
@@ -54,10 +70,10 @@ func LoadWebhookAction(configName string, action string) (WebhookAction, error) 
 	return config, nil
 }
 
-func findActionConfig(configs []webhookConfig, action string) *webhookConfig {
-	for _, config := range configs {
+func findActionConfig(conf webhookConfig, action string) *actionImpl {
+	for _, config := range conf.Actions {
 		if config.ObjectKind == action {
-			return &config
+			return &actionImpl{config.Calling, conf.SecretToken}
 		}
 	}
 	return nil

@@ -1,6 +1,9 @@
-[
-    {
-        "object_kind": "push",
-        "calling": [200, -2000, 500]
-    }
-]
+{
+    "secret_token": "asdf",
+    "actions": [
+        {
+            "object_kind": "push",
+            "calling": [200, -2000, 500]
+        }
+    ]
+}

@@ -67,6 +67,10 @@ func webhooksHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Could not find action '%v' in config '%v'.", metaData.ObjectKind, configName)
 		return
 	}
+	if !action.IsAuthorized(r) {
+		log.Printf("Denied unauthorized access to config '%v'.", configName)
+		return
+	}
 	mutex.Lock()
 	defer mutex.Unlock()
 	action.Run(pin)
