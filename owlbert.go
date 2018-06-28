@@ -1,12 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"sync"
-	"time"
 
 	"./pinlike"
 	"./webhook"
@@ -40,15 +38,8 @@ func main() {
 	pin = new(pinlike.StubPinLike)
 	mutex = &sync.Mutex{}
 
-	http.HandleFunc("/db-casino/push", handler)
 	http.HandleFunc(webhooksMapping, webhooksHandler)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
-}
-
-func handler(w http.ResponseWriter, r *http.Request) {
-	pin.High()
-	time.Sleep(10 * time.Second)
-	fmt.Fprintf(w, "Hi there, I love %s!", r.URL.Path[1:])
 }
 
 func webhooksHandler(w http.ResponseWriter, r *http.Request) {
