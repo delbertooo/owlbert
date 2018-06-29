@@ -23,6 +23,7 @@ func NewGpioPinLike(pinNumber uint8) *GpioPinLike {
 
 	// Set pin to output mode
 	pin.Output()
+	pin.Pull(rpio.PullDown)
 
 	return &GpioPinLike{pin}
 }

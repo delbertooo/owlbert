@@ -25,8 +25,8 @@ func main() {
 	port := os.Args[1]
 
 	var conn pinlike.Connection
-	//conn = (pinlike.GpioConnection)
-	conn = new(pinlike.StubConnection)
+	conn = new(pinlike.GpioConnection)
+	//conn = new(pinlike.StubConnection)
 	if err := conn.Open(); err != nil {
 		panic(err)
 	}
@@ -34,8 +34,8 @@ func main() {
 	defer conn.Close()
 
 	// Pin 10 here is exposed on the pin header as physical pin 19
-	//pin = pinlike.NewGpioPinLike(10)
-	pin = new(pinlike.StubPinLike)
+	pin = pinlike.NewGpioPinLike(14)
+	//pin = new(pinlike.StubPinLike)
 	mutex = &sync.Mutex{}
 
 	http.HandleFunc(webhooksMapping, webhooksHandler)
